@@ -11,36 +11,28 @@ function FinishedMatchesContent() {
   const selectedGame = searchParams.get('game') || 'lol';
 
   useEffect(() => {
-    async function fetchFinishedMatches() {
+    async function fetchMatches() {
       try {
-        const res = await axios.get(`http://localhost:3001/matches/finished?game=${selectedGame}`);
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/matches/finished?game=${selectedGame}`);
         setMatches(res.data);
-      } catch (error) {
-        console.error('Erreur chargement matchs terminés:', error.message);
+      } catch (err) {
+        console.error('Erreur chargement matchs terminés:', err.message);
       } finally {
         setLoading(false);
       }
     }
-
-    fetchFinishedMatches();
+    fetchMatches();
   }, [selectedGame]);
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-center mb-8">
-        Matchs terminés ({selectedGame.toUpperCase()})
-      </h1>
-
-      {loading ? (
-        <p className="text-center">Chargement...</p>
-      ) : matches.length === 0 ? (
-        <p className="text-center text-gray-600">Aucun match terminé trouvé.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {matches.map((match) => (
-            <div key={match.id} className="bg-white rounded-xl p-4 shadow">
-              {/* ici afficher match */}
-              {match.name || match.league?.name}
+      <h1 className="text-3xl font-bold text-center mb-6">Matchs terminés ({selectedGame.toUpperCase()})</h1>
+      {loading ? <p className="text-center">Chargement...</p> : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {matches.map(match => (
+            <div key={match.id} className="bg-gray-100 rounded-lg p-4 shadow">
+              <p>{match.league?.name}</p>
+              <p>Score : {match.results?.map(r => r.score).join(' - ')}</p>
             </div>
           ))}
         </div>
@@ -49,10 +41,10 @@ function FinishedMatchesContent() {
   );
 }
 
-export default function FinishedMatchesPage() {
+export default function Page() {
   return (
-    <main className="min-h-screen bg-gray-100 p-6">
-      <Suspense fallback={<p className="text-center">Chargement en cours...</p>}>
+    <main className="p-6">
+      <Suspense fallback={<p className="text-center">Chargement des résultats...</p>}>
         <FinishedMatchesContent />
       </Suspense>
     </main>

@@ -3,7 +3,6 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
-import Image from 'next/image';
 
 function LiveMatchesContent() {
   const [matches, setMatches] = useState([]);
@@ -12,35 +11,36 @@ function LiveMatchesContent() {
   const selectedGame = searchParams.get('game') || 'lol';
 
   useEffect(() => {
-    async function fetchLiveMatches() {
+    async function fetchMatches() {
       try {
-        const res = await axios.get(`http://localhost:3001/matches/live?game=${selectedGame}`);
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/matches/live?game=${selectedGame}`);
         setMatches(res.data);
-      } catch (error) {
-        console.error('Erreur chargement matchs en direct:', error.message);
+      } catch (err) {
+        console.error('Erreur chargement matchs en direct:', err.message);
       } finally {
         setLoading(false);
       }
     }
-
-    fetchLiveMatches();
+    fetchMatches();
   }, [selectedGame]);
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-center mb-8">
-        Matchs en direct ({selectedGame.toUpperCase()})
-      </h1>
-
-      {loading ? (
-        <p className="text-center">Chargement...</p>
-      ) : matches.length === 0 ? (
-        <p className="text-center text-gray-600">Aucun match en cours.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {matches.map((match) => (
-            <div key={match.id} className="bg-white rounded-xl p-4 shadow">
-              {match.name || match.league?.name}
+      <h1 className="text-3xl font-bold text-center mb-6">Matchs en direct ({selectedGame.toUpperCase()})</h1>
+      {loading ? <p className="text-center">Chargement...</p> : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {matches.map(match => (
+            <div key={match.id} className="bg-red-100 rounded-lg p-4 shadow">
+              <p>{match.league?.name}</p>
+              {match.streams_list?.[0]?.embed_url && (
+                <iframe
+                  width="100%"
+                  height="200"
+                  src={match.streams_list[0].embed_url}
+                  title="Live Stream"
+                  allowFullScreen
+                ></iframe>
+              )}
             </div>
           ))}
         </div>
@@ -49,10 +49,10 @@ function LiveMatchesContent() {
   );
 }
 
-export default function LiveMatchesPage() {
+export default function Page() {
   return (
-    <main className="min-h-screen bg-gray-100 p-6">
-      <Suspense fallback={<p className="text-center">Chargement en cours...</p>}>
+    <main className="p-6">
+      <Suspense fallback={<p className="text-center">Chargement des streams...</p>}>
         <LiveMatchesContent />
       </Suspense>
     </main>

@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
+import MatchCard from '@/components/MatchCard';
 
 function LiveMatchesContent() {
   const [matches, setMatches] = useState([]);
@@ -26,22 +27,13 @@ function LiveMatchesContent() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-center mb-6">Matchs en direct ({selectedGame.toUpperCase()})</h1>
-      {loading ? <p className="text-center">Chargement...</p> : (
+      <h1 className="text-3xl font-bold text-center mb-6">Matchs en cours ({selectedGame.toUpperCase()})</h1>
+      {loading ? (
+        <p className="text-center">Chargement...</p>
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {matches.map(match => (
-            <div key={match.id} className="bg-red-100 rounded-lg p-4 shadow">
-              <p>{match.league?.name}</p>
-              {match.streams_list?.[0]?.embed_url && (
-                <iframe
-                  width="100%"
-                  height="200"
-                  src={match.streams_list[0].embed_url}
-                  title="Live Stream"
-                  allowFullScreen
-                ></iframe>
-              )}
-            </div>
+            <MatchCard key={match.id} match={match} showStream showScore />
           ))}
         </div>
       )}
@@ -51,7 +43,7 @@ function LiveMatchesContent() {
 
 export default function Page() {
   return (
-    <main className="p-6">
+    <main className="p-6 bg-black min-h-screen text-white">
       <Suspense fallback={<p className="text-center">Chargement des streams...</p>}>
         <LiveMatchesContent />
       </Suspense>

@@ -1,35 +1,45 @@
-import TeamCard from './TeamCard';
-import StreamButton from './StreamButton';
+'use client';
 
-export default function MatchCard({ match }) {
-  const team1 = match.opponents?.[0]?.opponent;
-  const team2 = match.opponents?.[1]?.opponent;
-  const startTime = match.begin_at
-    ? new Date(match.begin_at).toLocaleString()
-    : 'Heure inconnue';
+import Image from 'next/image';
+
+export default function MatchCard({ match, showScore = false, showStream = false }) {
+  const leagueName = match.league?.name || 'League inconnue';
+  const leagueLogo = match.league?.image_url || '/default-league-logo.png';
+  const date = new Date(match.begin_at).toLocaleString();
+  const results = match.results?.map(r => r.score).join(' - ');
+  const streamLinks = match.streams_list || [];
 
   return (
-    <div className="bg-white rounded-2xl shadow hover:shadow-xl transform hover:scale-105 transition-transform duration-300 p-6">
-      <div className="flex justify-between items-center mb-4">
-        <TeamCard team={team1} />
-        <span className="text-xl font-bold text-gray-600">VS</span>
-        <TeamCard team={team2} />
-      </div>
+    <div className="bg-white rounded-xl p-4 shadow flex flex-col items-center justify-between min-h-[200px]">
+      <Image
+        src={leagueLogo}
+        alt={leagueName}
+        width={64}
+        height={64}
+        className="object-contain mb-2"
+      />
+      <p className="text-lg font-semibold text-gray-800">{leagueName}</p>
+      <p className="text-sm text-gray-600">{date}</p>
 
-      <div className="flex justify-center items-center text-gray-500 text-sm mb-4">
-        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" strokeWidth="2"
-             viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        {startTime}
-      </div>
+      {showScore && results && (
+        <p className="text-sm mt-1 text-gray-700">Score : {results}</p>
+      )}
 
-      <div className="flex flex-wrap justify-center gap-2">
-        {match.streams_list?.map((stream, i) => (
-          <StreamButton key={i} stream={stream} />
-        ))}
-      </div>
+      {showStream && streamLinks.length > 0 && (
+        <div className="mt-2 flex flex-wrap justify-center gap-2">
+          {streamLinks.map((stream, index) => (
+            <a
+              key={index}
+              href={stream.raw_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Regarder ({stream.language.toUpperCase()})
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

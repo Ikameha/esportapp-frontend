@@ -1,39 +1,65 @@
-'use client';
+import React from 'react';
 
-import Image from 'next/image';
+export default function MatchCard({ match, showStream = false }) {
+  const {
+    id,
+    league,
+    opponents,
+    begin_at,
+    status,
+    streams_list,
+    results
+  } = match;
 
-export default function MatchCard({ match, showScore = false, showStream = false }) {
-  const leagueName = match.league?.name || 'League inconnue';
-  const leagueLogo = match.league?.image_url || '/default-league-logo.png';
-  const date = new Date(match.begin_at).toLocaleString();
-  const results = match.results?.map(r => r.score).join(' - ');
-  const streamLinks = match.streams_list || [];
+  const teamA = opponents[0]?.opponent;
+  const teamB = opponents[1]?.opponent;
+
+  const getScore = () => {
+    if (results?.length === 2) {
+      return `${results[0].score} - ${results[1].score}`;
+    }
+    return 'À venir';
+  };
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow flex flex-col items-center justify-between min-h-[200px]">
-      <Image
-        src={leagueLogo}
-        alt={leagueName}
-        width={64}
-        height={64}
-        className="object-contain mb-2"
-      />
-      <p className="text-lg font-semibold text-gray-800">{leagueName}</p>
-      <p className="text-sm text-gray-600">{date}</p>
+    <div style={styles.card}>
+      <div style={styles.league}>
+        {league?.image_url && (
+          <img src={league.image_url} alt={league.name} style={styles.logo} />
+        )}
+        <span>{league?.name}</span>
+      </div>
 
-      {showScore && results && (
-        <p className="text-sm mt-1 text-gray-700">Score : {results}</p>
-      )}
+      <div style={styles.teams}>
+        <div style={styles.team}>
+          {teamA?.image_url && (
+            <img src={teamA.image_url} alt={teamA.name} style={styles.teamLogo} />
+          )}
+          <p>{teamA?.name || 'TBD'}</p>
+        </div>
 
-      {showStream && streamLinks.length > 0 && (
-        <div className="mt-2 flex flex-wrap justify-center gap-2">
-          {streamLinks.map((stream, index) => (
+        <span style={styles.vs}>VS</span>
+
+        <div style={styles.team}>
+          {teamB?.image_url && (
+            <img src={teamB.image_url} alt={teamB.name} style={styles.teamLogo} />
+          )}
+          <p>{teamB?.name || 'TBD'}</p>
+        </div>
+      </div>
+
+      <p style={styles.date}>{new Date(begin_at).toLocaleString()}</p>
+      <p style={styles.score}>Score : {getScore()}</p>
+
+      {showStream && streams_list?.length > 0 && (
+        <div style={styles.streams}>
+          {streams_list.map((stream, i) => (
             <a
-              key={index}
+              key={i}
               href={stream.raw_url}
               target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+              rel="noreferrer"
+              style={styles.streamBtn}
             >
               Regarder ({stream.language.toUpperCase()})
             </a>
@@ -43,3 +69,73 @@ export default function MatchCard({ match, showScore = false, showStream = false
     </div>
   );
 }
+
+const styles = {
+  card: {
+    border: '1px solid #ddd',
+    borderRadius: 12,
+    padding: 16,
+    background: '#fff',
+    color: '#000',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 8,
+    width: '100%',
+    maxWidth: 400,
+    margin: 'auto',
+    boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+  },
+  league: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  logo: {
+    width: 24,
+    height: 24,
+  },
+  teams: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 16,
+  },
+  team: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  teamLogo: {
+    width: 48,
+    height: 48,
+    objectFit: 'contain',
+  },
+  vs: {
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  date: {
+    fontSize: 14,
+    color: '#333',
+  },
+  score: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  streams: {
+    display: 'flex',
+    gap: 8,
+    flexWrap: 'wrap',
+    marginTop: 8,
+  },
+  streamBtn: {
+    padding: '6px 12px',
+    background: '#2563eb',
+    color: '#fff',
+    borderRadius: 6,
+    textDecoration: 'none',
+    fontSize: 12,
+  },
+};
